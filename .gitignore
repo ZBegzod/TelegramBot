@@ -1,0 +1,10 @@
+env
+migrations/versions
+media
+static
+!**/__pycache__/
+*.pyc
+*.pyo
+/.idea
+/.vs
+.env
