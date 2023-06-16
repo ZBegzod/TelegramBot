@@ -7,19 +7,19 @@ kb = ReplyKeyboardMarkup(
     resize_keyboard=True, one_time_keyboard=True
 )
 
-b1 = KeyboardButton('/help')
-b2 = KeyboardButton('/start')
+b1 = KeyboardButton('help')
+b2 = KeyboardButton('start')
 
-b3 = KeyboardButton('/photo')
-b4 = KeyboardButton('/give')
+b3 = KeyboardButton('photo')
+b4 = KeyboardButton('give')
 
-b5 = KeyboardButton('/links')
-b6 = KeyboardButton('/vote')
+b5 = KeyboardButton('links')
+b6 = KeyboardButton('vote')
 
-b7 = KeyboardButton('/office')
-b8 = KeyboardButton('/home')
+b7 = KeyboardButton('office')
+b8 = KeyboardButton('home')
 
-b9 = KeyboardButton('/phone_number', request_contact=True)
+b9 = KeyboardButton('phone number', request_contact=True)
 
 kb = kb.add(b1).insert(b2).insert(b3).add(b4).insert(b5)
 kb.insert(b6).insert(b7).insert(b8).insert(b9)

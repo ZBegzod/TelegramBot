@@ -1,5 +1,6 @@
 from keyboards import kb, ikb_link, ikb_vote
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.dispatcher.filters import Text
 
 from config import (
     API_TOKEN, sticker_id, sticker_id2,
@@ -21,7 +22,7 @@ async def share_phone_number(message: types.Message):
     )
 
 
-@db.message_handler(commands=['help'])
+@db.message_handler(Text(equals='help'))
 async def help_command(message: types.Message):
     await bot.send_message(
         chat_id=message.from_user.id,
@@ -31,7 +32,7 @@ async def help_command(message: types.Message):
     )
 
 
-@db.message_handler(commands=['start'])
+@db.message_handler(Text(equals='start'))
 async def send_welcome(message: types.Message):
     await bot.send_message(
         chat_id=message.from_user.id,
@@ -41,7 +42,7 @@ async def send_welcome(message: types.Message):
     )
 
 
-@db.message_handler(commands=['links'])
+@db.message_handler(Text(equals='links'))
 async def send_link(message: types.Message):
     await message.answer(
         text='select options...',
@@ -49,7 +50,7 @@ async def send_link(message: types.Message):
     )
 
 
-@db.message_handler(commands=['give'])
+@db.message_handler(Text(equals='give'))
 async def give_sticker(message: types.Message):
     await bot.send_sticker(
         message.from_user.id,
@@ -74,7 +75,7 @@ async def get_location(message: types.Message):
     await message.answer(reply, reply_markup=kb)
 
 
-@db.message_handler(commands=['photo'])
+@db.message_handler(Text(equals='photo'))
 async def send_photo(message: types.Message):
     await bot.send_photo(
         chat_id=message.from_user.id,
@@ -82,7 +83,7 @@ async def send_photo(message: types.Message):
     )
 
 
-@db.message_handler(commands=['office'])
+@db.message_handler(Text(equals='office'))
 async def office_location(message: types.Message):
     await bot.send_location(
         message.from_user.id,
@@ -92,7 +93,7 @@ async def office_location(message: types.Message):
     )
 
 
-@db.message_handler(commands=['home'])
+@db.message_handler(Text(equals='home'))
 async def home_location(message: types.Message):
     await bot.send_location(
         message.from_user.id,
@@ -102,7 +103,7 @@ async def home_location(message: types.Message):
     )
 
 
-@db.message_handler(commands=['vote'])
+@db.message_handler(Text(equals='vote'))
 async def vote_command(message: types.Message):
     await bot.send_photo(
         chat_id=message.from_user.id,
