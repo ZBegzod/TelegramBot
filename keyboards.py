@@ -20,9 +20,10 @@ b7 = KeyboardButton('office')
 b8 = KeyboardButton('home')
 
 b9 = KeyboardButton('phone number', request_contact=True)
+b10 = KeyboardButton('random photo')
 
 kb = kb.add(b1).insert(b2).insert(b3).add(b4).insert(b5)
-kb.insert(b6).insert(b7).insert(b8).insert(b9)
+kb.insert(b6).insert(b7).insert(b8).insert(b9).insert(b10)
 
 ikb_link = InlineKeyboardMarkup(
     row_width=2
@@ -38,16 +39,23 @@ ib2 = InlineKeyboardButton(
 
 ikb_link.add(ib1, ib2)
 
-ikb_vote = InlineKeyboardMarkup(
+ikb_photo = InlineKeyboardMarkup(
     row_width=2
 )
 
-ib3 = InlineKeyboardButton(
+ibp1 = InlineKeyboardButton(
     text='👍', callback_data='like'
 )
-
-ib4 = InlineKeyboardButton(
-    text=' 👎', callback_data='dislike'
+ibp2 = InlineKeyboardButton(
+    text='👎', callback_data='dislike'
+)
+ibp3 = InlineKeyboardButton(
+    text='random another photo',
+    callback_data='next'
+)
+ibp4 = InlineKeyboardButton(
+    text='main section',
+    callback_data='main'
 )
 
-ikb_vote.add(ib3, ib4)
+ikb_photo.add(ibp1, ibp2).add(ibp3).add(ibp4)
