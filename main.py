@@ -1,6 +1,12 @@
 import random
 from aiogram.dispatcher.filters import Text
-from aiogram.types import ReplyKeyboardRemove
+from config import (
+    API_TOKEN, sticker_id, sticker_id2,
+    photo_1, photo_2, photo_3, photo_4, photo_5, HELP_COMMAND
+)
+from aiogram.types import (
+    ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
+)
 from keyboards import (
     kb, ikb_photo, ikb_link
 )
@@ -8,12 +14,8 @@ from aiogram import (
     Bot, Dispatcher, executor, types
 )
 
-from config import (
-    API_TOKEN, sticker_id, sticker_id2,
-    photo_1, photo_2, photo_3, photo_4, photo_5, HELP_COMMAND
-)
-
 flag = False
+number = 0
 bot = Bot(token=API_TOKEN)
 db = Dispatcher(bot)
 
@@ -43,8 +45,15 @@ async def random_photo(message: types.Message):
     await send_random(message=message)
 
 
-@db.callback_query_handler()
+@db.callback_query_handler(
+    lambda callback_query:
+    callback_query.data == 'like' or
+    callback_query.data == 'dislike' or
+    callback_query.data == 'main' or
+    callback_query.data == 'next'
+)
 async def callback_query_photo(callback: types.CallbackQuery):
+    print(callback)
     global random_photo_v, flag
     if callback.data == 'like':
         if not flag:
@@ -66,6 +75,35 @@ async def callback_query_photo(callback: types.CallbackQuery):
             reply_markup=ikb_photo)
 
 
+def get_inline_keyboard() -> InlineKeyboardMarkup:
+    ikb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton('Increase', callback_data='btn_increase'),
+            InlineKeyboardButton('Decrease', callback_data='btn_decrease')
+        ]
+    ])
+    return ikb
+
+
+@db.callback_query_handler(lambda callback_query: callback_query.data.startswith('btn'))
+async def callback_increase_decrease(callback: types.CallbackQuery):
+    global number
+    if callback.data == 'btn_decrease':
+        number += 1
+        await callback.message.edit_text(
+            text=f"The current number is {number}",
+            reply_markup=get_inline_keyboard()
+        )
+    elif callback.data == 'btn_increase':
+        number -= 1
+        await callback.message.edit_text(
+            text=f"The current number is {number}",
+            reply_markup=get_inline_keyboard()
+        )
+    else:
+        1 / 0
+
+
 @db.message_handler(commands=['phone_number'])
 async def share_phone_number(message: types.Message):
     await message.reply(
@@ -85,11 +123,9 @@ async def help_command(message: types.Message):
 
 @db.message_handler(Text(equals='start'))
 async def send_welcome(message: types.Message):
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        reply_markup=kb,
-        text='Salom !',
-        parse_mode='HTML'
+    await message.answer(
+        text=f'The current number is {number}',
+        reply_markup=get_inline_keyboard()
     )
 
 
