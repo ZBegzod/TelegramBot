@@ -1,18 +1,69 @@
-from keyboards import kb, ikb_link, ikb_vote
-from aiogram import Bot, Dispatcher, executor, types
+import random
 from aiogram.dispatcher.filters import Text
+from aiogram.types import ReplyKeyboardRemove
+from keyboards import (
+    kb, ikb_photo, ikb_link
+)
+from aiogram import (
+    Bot, Dispatcher, executor, types
+)
 
 from config import (
     API_TOKEN, sticker_id, sticker_id2,
-    photo_link, girl_photo_id, HELP_COMMAND
+    photo_1, photo_2, photo_3, photo_4, photo_5, HELP_COMMAND
 )
 
+flag = False
 bot = Bot(token=API_TOKEN)
 db = Dispatcher(bot)
+
+array_photo = [photo_1, photo_2, photo_3, photo_4, photo_5]
+photos = dict(zip(array_photo, ['1', '2', '3', '4', '5']))
+random_photo_v = random.choice(list(photos.keys()))
 
 
 async def start_up(_):
     print("Bot working...")
+
+
+async def send_random(message: types.Message):
+    global random_photo_v
+    random_photo_v = random.choice(list(photos.keys()))
+
+    await bot.send_photo(
+        chat_id=message.chat.id,
+        photo=random_photo_v,
+        caption=photos[random_photo_v],
+        reply_markup=ikb_photo
+    )
+
+
+@db.message_handler(Text(equals='random photo'))
+async def random_photo(message: types.Message):
+    await send_random(message=message)
+
+
+@db.callback_query_handler()
+async def callback_query_photo(callback: types.CallbackQuery):
+    global random_photo_v, flag
+    if callback.data == 'like':
+        if not flag:
+            await callback.answer('you reacted like!')
+            flag = not flag
+        else:
+            await callback.answer('you already reacted like!')
+    elif callback.data == 'dislike':
+        await callback.answer('you reacted dislike!')
+    elif callback.data == 'main':
+        await callback.message.answer('Welcome to main section', reply_markup=kb)
+        await callback.message.delete()
+    else:
+        random_photo_v = random.choice(list(filter(lambda x: x != random_photo_v, list(photos.keys()))))
+        await callback.message.edit_media(types.InputMedia(
+            type='photo',
+            media=random_photo_v,
+            caption=photos[random_photo_v]),
+            reply_markup=ikb_photo)
 
 
 @db.message_handler(commands=['phone_number'])
@@ -79,7 +130,7 @@ async def get_location(message: types.Message):
 async def send_photo(message: types.Message):
     await bot.send_photo(
         chat_id=message.from_user.id,
-        photo=photo_link, reply_markup=kb
+        photo=photo_1, reply_markup=kb
     )
 
 
@@ -103,21 +154,22 @@ async def home_location(message: types.Message):
     )
 
 
-@db.message_handler(Text(equals='vote'))
-async def vote_command(message: types.Message):
-    await bot.send_photo(
-        chat_id=message.from_user.id,
-        photo=girl_photo_id,
-        caption='do you like that girl?',
-        reply_markup=ikb_vote
-    )
+# @db.message_handler(Text(equals='vote'))
+# async def vote_command(message: types.Message):
+#     await bot.send_photo(
+#         chat_id=message.from_user.id,
+#         photo=girl_photo_id,
+#         caption='do you like that girl?',
+#         reply_markup=ikb_vote
+#     )
 
 
-@db.callback_query_handler()
-async def vote_callback(callback: types.CallbackQuery):
-    if callback.data == 'like':
-        await callback.answer(text='Sizga yoqqandan hursandman 😊')
-    await callback.answer(text="Sizga boshqa varyantlarni ko'rsataman")
+# @db.callback_query_handler()
+# async def vote_callback(callback: types.CallbackQuery):
+#     if callback.data == 'like':
+#         await callback.answer(text='you reacted like !')
+#     await callback.answer(text="you reacted dislike !")
+
 
 # @db.message_handler()
 # async def send_random_letter(message: types.Message):
