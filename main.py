@@ -1,18 +1,22 @@
 import random
 from aiogram.dispatcher.filters import Text
 from config import (
-    API_TOKEN, sticker_id, sticker_id2,
-    photo_1, photo_2, photo_3, photo_4, photo_5, HELP_COMMAND
+    API_TOKEN, sticker_id,
+    photo_1, photo_2, photo_3,
+    photo_4, photo_5, HELP_COMMAND
 )
 from aiogram.types import (
-    ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
+    InlineKeyboardButton,
+    InlineKeyboardMarkup
 )
 from keyboards import (
-    kb, ikb_photo, ikb_link
+    kb, ikb_photo, ikb_link, cb_photo
 )
+
 from aiogram import (
     Bot, Dispatcher, executor, types
 )
+from aiogram.utils.callback_data import CallbackData
 
 flag = False
 number = 0
@@ -22,6 +26,7 @@ db = Dispatcher(bot)
 array_photo = [photo_1, photo_2, photo_3, photo_4, photo_5]
 photos = dict(zip(array_photo, ['1', '2', '3', '4', '5']))
 random_photo_v = random.choice(list(photos.keys()))
+cb = CallbackData('ikb', 'action')
 
 
 async def start_up(_):
@@ -45,25 +50,19 @@ async def random_photo(message: types.Message):
     await send_random(message=message)
 
 
-@db.callback_query_handler(
-    lambda callback_query:
-    callback_query.data == 'like' or
-    callback_query.data == 'dislike' or
-    callback_query.data == 'main' or
-    callback_query.data == 'next'
-)
-async def callback_query_photo(callback: types.CallbackQuery):
-    print(callback)
+@db.callback_query_handler(cb_photo.filter())
+async def callback_query_photo(callback: types.CallbackQuery, callback_data: dict):
     global random_photo_v, flag
-    if callback.data == 'like':
+
+    if callback_data['action'] == 'like':
         if not flag:
             await callback.answer('you reacted like!')
             flag = not flag
         else:
             await callback.answer('you already reacted like!')
-    elif callback.data == 'dislike':
+    elif callback_data['action'] == 'dislike':
         await callback.answer('you reacted dislike!')
-    elif callback.data == 'main':
+    elif callback_data['action'] == 'main':
         await callback.message.answer('Welcome to main section', reply_markup=kb)
         await callback.message.delete()
     else:
@@ -78,30 +77,39 @@ async def callback_query_photo(callback: types.CallbackQuery):
 def get_inline_keyboard() -> InlineKeyboardMarkup:
     ikb = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton('Increase', callback_data='btn_increase'),
-            InlineKeyboardButton('Decrease', callback_data='btn_decrease')
-        ]
+            InlineKeyboardButton('Increase', callback_data=cb.new('btn_increase')),
+            InlineKeyboardButton('Decrease', callback_data=cb.new('btn_decrease'))
+        ],
+        [InlineKeyboardButton('Random number', callback_data=cb.new('btn_random'))]
+
     ])
     return ikb
 
 
-@db.callback_query_handler(lambda callback_query: callback_query.data.startswith('btn'))
-async def callback_increase_decrease(callback: types.CallbackQuery):
+@db.callback_query_handler(cb.filter())
+async def callback_increase_decrease(callback: types.CallbackQuery, callback_data: dict):
     global number
-    if callback.data == 'btn_decrease':
+
+    if callback_data['action'] == 'btn_decrease':
         number += 1
         await callback.message.edit_text(
             text=f"The current number is {number}",
             reply_markup=get_inline_keyboard()
         )
-    elif callback.data == 'btn_increase':
+    elif callback_data['action'] == 'btn_increase':
         number -= 1
         await callback.message.edit_text(
             text=f"The current number is {number}",
             reply_markup=get_inline_keyboard()
         )
+    elif callback_data['action'] == 'btn_random':
+        number = random.randint(0, 100)
+        await callback.message.edit_text(
+            text=f"The random number is {number}",
+            reply_markup=get_inline_keyboard()
+        )
     else:
-        1 / 0
+        print('error')
 
 
 @db.message_handler(commands=['phone_number'])

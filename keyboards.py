@@ -2,6 +2,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup, KeyboardButton,
     InlineKeyboardButton, InlineKeyboardMarkup
 )
+from aiogram.utils.callback_data import CallbackData
 
 kb = ReplyKeyboardMarkup(
     resize_keyboard=True, one_time_keyboard=True
@@ -25,6 +26,8 @@ b10 = KeyboardButton('random photo')
 kb = kb.add(b1).insert(b2).insert(b3).add(b4).insert(b5)
 kb.insert(b6).insert(b7).insert(b8).insert(b9).insert(b10)
 
+cb_photo = CallbackData('ikb_photo', 'action')
+
 ikb_link = InlineKeyboardMarkup(
     row_width=2
 )
@@ -44,18 +47,18 @@ ikb_photo = InlineKeyboardMarkup(
 )
 
 ibp1 = InlineKeyboardButton(
-    text='👍', callback_data='like'
+    text='👍', callback_data=cb_photo.new('like')
 )
 ibp2 = InlineKeyboardButton(
-    text='👎', callback_data='dislike'
+    text='👎', callback_data=cb_photo.new('dislike')
 )
 ibp3 = InlineKeyboardButton(
     text='random another photo',
-    callback_data='next'
+    callback_data=cb_photo.new('next')
 )
 ibp4 = InlineKeyboardButton(
     text='main section',
-    callback_data='main'
+    callback_data=cb_photo.new('main')
 )
 
 ikb_photo.add(ibp1, ibp2).add(ibp3).add(ibp4)
