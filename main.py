@@ -1,14 +1,23 @@
-import random
+import asyncio
+import random, hashlib
+
 from aiogram.dispatcher.filters import Text
+from aiogram.utils.exceptions import BotBlocked
+from aiogram.utils.callback_data import CallbackData
+
 from config import (
     API_TOKEN, sticker_id,
     photo_1, photo_2, photo_3,
     photo_4, photo_5, HELP_COMMAND
 )
+
 from aiogram.types import (
     InlineKeyboardButton,
-    InlineKeyboardMarkup
+    InlineKeyboardMarkup,
+    InputTextMessageContent,
+    InlineQueryResultArticle
 )
+
 from keyboards import (
     kb, ikb_photo, ikb_link, cb_photo
 )
@@ -16,21 +25,46 @@ from keyboards import (
 from aiogram import (
     Bot, Dispatcher, executor, types
 )
-from aiogram.utils.callback_data import CallbackData
 
 flag = False
 number = 0
 bot = Bot(token=API_TOKEN)
 db = Dispatcher(bot)
 
+cb = CallbackData('ikb', 'action')
 array_photo = [photo_1, photo_2, photo_3, photo_4, photo_5]
 photos = dict(zip(array_photo, ['1', '2', '3', '4', '5']))
 random_photo_v = random.choice(list(photos.keys()))
-cb = CallbackData('ikb', 'action')
 
 
 async def start_up(_):
     print("Bot working...")
+
+
+@db.errors_handler(exception=BotBlocked)
+async def bot_blocker(update: types.Update, exception: BotBlocked):
+    print("you can't send message bot blocked !")
+    return True
+
+
+@db.inline_handler()
+async def inline_echo(inline_query: types.InlineQuery):
+    text = inline_query.query or 'Echo'
+    input_content = InputTextMessageContent(text)
+    result_id = hashlib.md5(text.encode()).hexdigest()
+
+    item = InlineQueryResultArticle(
+        id=result_id,
+        title='Echoo!!',
+        input_message_content=input_content
+    )
+
+    await bot.answer_inline_query(
+        cache_time=1,
+        results=[item],
+        inline_query_id=inline_query.id,
+
+    )
 
 
 async def send_random(message: types.Message):
@@ -48,6 +82,7 @@ async def send_random(message: types.Message):
 @db.message_handler(Text(equals='random photo'))
 async def random_photo(message: types.Message):
     await send_random(message=message)
+    await message.delete()
 
 
 @db.callback_query_handler(cb_photo.filter())
